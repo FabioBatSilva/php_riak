@@ -5,13 +5,19 @@ Basic riak connection
 use \Riak\Exception\ConnectionException;
 include_once "connect.inc";
 try {
-	$riak = new \Riak\Connection($host, $port);
-	if (isset($riak)) {
-		echo "done!".PHP_EOL;
-	}
-	$riak = new \Riak\Connection("255.255.255.255");
+    $riak1 = new \Riak\Connection($host, $port);
+    $riak2 = new \Riak\Connection("255.255.255.255");
+
+    $riak1->ping();
+
+    echo "done!"  .PHP_EOL;
+
+    $riak2->ping();
+
+    echo "fail!"  .PHP_EOL;
+
 } catch (ConnectionException $e) {
-	echo "Connection error!".PHP_EOL;
+    echo "Connection error!".PHP_EOL;
 }
 ?>
 --EXPECT--

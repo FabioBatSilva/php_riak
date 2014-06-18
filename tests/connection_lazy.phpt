@@ -106,12 +106,11 @@ $bucketInitializer = function(&$valueHolder) use ($connectionInitializer) {
 $bucket       = new RiakBucketProxy($bucketInitializer);
 $propList     = new BucketPropertyList(1, false);
 
-
 $bucket->setPropertyList($propList);
 
-var_dump($bucket->getPropertyList() instanceof BucketPropertyList);
-var_dump($bucket->getKeyList());
-
+printf("bucket property : %s\n", json_encode($bucket->getPropertyList() instanceof BucketPropertyList));
+printf("bucket keys     : %s\n", json_encode(is_array($bucket->getKeyList())));
 ?>
 --EXPECT--
-done!
+bucket property : true
+bucket keys     : true

@@ -40,11 +40,7 @@ zend_bool ensure_connected_init(riak_connection *connection, char* host, int hos
     zend_bool result;
     result = 0;
 
-    php_printf("ensure_connected_init - call\n");
-
     if (connection->client->sockfd <= 0) {
-        php_printf("ensure_connected_init - connection->client->sockfd <= 0\n");
-
         struct RIACK_CONNECTION_OPTIONS options;
         options.send_timeout_ms = RIAK_GLOBAL(send_timeout);
         options.recv_timeout_ms = RIAK_GLOBAL(recv_timeout);
@@ -54,19 +50,11 @@ zend_bool ensure_connected_init(riak_connection *connection, char* host, int hos
         if (riack_connect(connection->client, szHost, port, &options) == RIACK_SUCCESS) {
             connection->needs_reconnect = 0;
             result = 1;
-
-            php_printf("ensure_connected_init - riack_connect OK\n");
-        } else {
-            php_printf("ensure_connected_init - riack_connect FAILURE\n");
         }
         pefree(szHost, 0);
     } else {
-        php_printf("ensure_connected_init - ensure_connected\n");
         result = ensure_connected(connection TSRMLS_CC);
     }
-
-    php_printf("ensure_connected_init - result %d\n", result);
-    php_printf("ensure_connected_init - end\n");
 
     return result;
 }
@@ -132,32 +120,21 @@ riak_connection *take_connection(char* host, int host_len, int port TSRMLS_DC) /
    riak_connection_pool* pool;
    riak_connection_pool_entry *entry = NULL;
 
-   php_printf("--------------------------------- \n");
-   php_printf("take_connection - call \n");
-   php_printf("take_connection - host : %s \n", host);
-   php_printf("take_connection - port : %i \n", port);
-
    if (lock_pool(TSRMLS_C)) {
-
-      php_printf("take_connection - lock_pool\n");
-
       pool = pool_for_host_port(host, host_len, port TSRMLS_CC);
       entry = take_connection_entry_from_pool(pool);
       unlock_pool(TSRMLS_C);
    }
 
    if (entry) {
-      php_printf("take_connection - entry\n");
       connection = &entry->connection;
       if (!ensure_connected_init(connection, host, host_len, port TSRMLS_CC)) {
-         php_printf("take_connection - NOT ensure_connected_init\n");
          connection->needs_reconnect = 1;
          release_connection_from_pool(pool, connection);
          return NULL;
       }
       RIAK_GLOBAL(open_connections_persistent)++;
    } else {
-      php_printf("take_connection - NOT entry\n");
       /* We could not get a persistent connection, make a new non persistent connection. */
       connection = pemalloc(sizeof(riak_connection), 0);
       memset(connection, 0, sizeof(riak_connection));
@@ -172,17 +149,6 @@ riak_connection *take_connection(char* host, int host_len, int port TSRMLS_DC) /
    if (connection) {
       RIAK_GLOBAL(open_connections)++;
    }
-
-   php_printf("take_connection - connection->needs_reconnect  : %d\n",  connection->needs_reconnect);
-   php_printf("take_connection - connection->persistent       : %d\n",  connection->persistent);
-   php_printf("take_connection - connection->last_used_at     : %ld\n", connection->last_used_at);
-
-   php_printf("take_connection - connection->client->sockfd     : %d\n",  connection->client->sockfd);
-   php_printf("take_connection - connection->client->last_error : %s\n",  connection->client->last_error);
-   php_printf("take_connection - connection->client->host       : %s\n",  connection->client->host);
-   php_printf("take_connection - connection->client->port       : %d\n",  connection->client->port);
-
-   php_printf("take_connection - end\n");
 
    return connection;
 }

@@ -258,13 +258,6 @@ PHP_METHOD(RiakBucket, getKeyList)
     // Not gonna do a retry here on purpose... no reason to retry a mistake in the first place
     riackstatus = riack_list_keys(connection->client, rsbucket, &resultlist);
 
-    php_printf("RiakBucket#getKeyList - connection->client->sockfd     : %d\n",  connection->client->sockfd);
-    php_printf("RiakBucket#getKeyList - connection->client->last_error : %s\n",  connection->client->last_error);
-    php_printf("RiakBucket#getKeyList - connection->client->host       : %s\n",  connection->client->host);
-    php_printf("RiakBucket#getKeyList - connection->client->port       : %d\n",  connection->client->port);
-
-    php_printf("RiakBucket#getKeyList - status %d\n", riackstatus);
-
     CHECK_RIACK_STATUS_THROW_AND_RETURN_ON_ERROR(connection, riackstatus);
 
     MAKE_STD_ZVAL(zresultarr);
@@ -1124,34 +1117,6 @@ riak_connection *get_riak_connection(zval *zbucket TSRMLS_DC)/* {{{ */
         return NULL;
     }
 
-    const zend_class_entry *ceBucket = Z_OBJCE_P(zbucket);
-    const zend_class_entry *ceClient = Z_OBJCE_P(zclient);
-
-    php_printf("%s#get_riak_connection : client %s\n", ceBucket->name, ceClient->name);
-
-    data = (client_data*) zend_object_store_get_object(zclient TSRMLS_CC);
-
-    if (data->connection) {
-        ensure_connected(data->connection TSRMLS_CC);
-
-        return data->connection;
-    }
-
-    php_printf("%s#get_riak_connection : connection NULL \n", ceBucket->name);
-
-    if ( ! create_object_connection(zclient TSRMLS_CC)) {
-        php_printf("%s#get_riak_connection : unable to create object connection\n", ceBucket->name);
-        return NULL;
-    }
-
-    php_printf("%s#get_riak_connection : post connect \n", ceBucket->name);
-
-    data = (client_data*) zend_object_store_get_object(zclient TSRMLS_CC);
-
-    if ( ! data->connection) {
-        php_printf("%s#get_riak_connection : ta null essa porra \n", ceBucket->name);
-    }
-
-    return data->connection;
+    return get_client_connection(zclient TSRMLS_CC);
 }
 /* }}} */
