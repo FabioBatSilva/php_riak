@@ -1,5 +1,5 @@
 --TEST--
-Test Riak\Connection
+Test Lazy Riak\Connection
 --FILE--
 <?php
 include_once "connect.inc";
@@ -8,10 +8,6 @@ use Riak\BucketPropertyList;
 use Riak\Connection;
 use Riak\Bucket;
 
-// phpize && ./configure && make install
-// ./buildconf --force
-// ./configure --disable-all  --enable-debug --enable-maintainer-zts --enable-cgi --enable-cli
-// extension=riak.so
 class RiakConnectionProxy extends Connection
 {
     private $valueHolder = null;
