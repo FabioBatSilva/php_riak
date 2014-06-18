@@ -526,11 +526,6 @@ PHP_METHOD(RiakBucket, setPropertyList)
 
     THROW_EXCEPTION_IF_CONNECTION_IS_NULL(connection);
 
-    if  ( ! connection) {
-        zend_throw_exception(riak_badarguments_exception_ce, "Invalid connection", 501 TSRMLS_CC);
-        return;
-    }
-
     SET_PROPLIST_LONG(getNValue, n_val);
     SET_PROPLIST_BOOL(getAllowMult, allow_mult);
 
