@@ -12,14 +12,13 @@ use Riak\Connection;
 
 $clients = array();
 
-for ($i=0; $i<25; ++$i) {
-    $clients[] = new Connection($host, $port);
-}
 
 echo 'active connection     : ' . PoolInfo::getNumActiveConnection().PHP_EOL;
 
-foreach ($clients as $client) {
-    $client->ping();
+for ($i=0; $i<25; ++$i) {
+    $clients[] = new Connection($host, $port);
+
+    $clients[$i]->ping();
 }
 
 echo 'active connection     : ' . PoolInfo::getNumActiveConnection().PHP_EOL;

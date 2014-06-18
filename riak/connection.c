@@ -65,28 +65,27 @@ void riak_connection_init(TSRMLS_D) /* {{{ */
 
 zend_object_value create_client_data(zend_class_entry *class_type TSRMLS_DC) /* {{{ */
 {
-	zend_object_value retval;
-	client_data *tobj;
+    zend_object_value retval;
+    client_data *tobj;
 
-	tobj = emalloc(sizeof(client_data));
+    tobj = emalloc(sizeof(client_data));
 
-	memset(tobj, 0, sizeof(client_data));
-	zend_object_std_init((zend_object *) &tobj->std, class_type TSRMLS_CC);
+    memset(tobj, 0, sizeof(client_data));
+    zend_object_std_init((zend_object *) &tobj->std, class_type TSRMLS_CC);
 
 #if ZEND_MODULE_API_NO >= 20100525
-	object_properties_init((zend_object*) &tobj->std, class_type);
+    object_properties_init((zend_object*) &tobj->std, class_type);
 #else
-	{
-		zval *tmp;
-		zend_hash_copy(tobj->std.properties, &class_type->default_properties, (copy_ctor_func_t)zval_add_ref, (void *)&tmp, sizeof(zval *));
-	}
+    {
+        zval *tmp;
+        zend_hash_copy(tobj->std.properties, &class_type->default_properties, (copy_ctor_func_t)zval_add_ref, (void *)&tmp, sizeof(zval *));
+    }
 #endif
 
-	retval.handle = zend_objects_store_put(tobj, (zend_objects_store_dtor_t) zend_objects_destroy_object,
-		(zend_objects_free_object_storage_t) free_client_data, NULL TSRMLS_CC);
-	retval.handlers = zend_get_std_object_handlers();
+    retval.handle   = zend_objects_store_put(tobj, (zend_objects_store_dtor_t) zend_objects_destroy_object, (zend_objects_free_object_storage_t) free_client_data, NULL TSRMLS_CC);
+    retval.handlers = zend_get_std_object_handlers();
 
-	return retval;
+    return retval;
 }
 /* }}} */
 
@@ -124,6 +123,28 @@ zval* create_client_object(char* host, long port TSRMLS_DC) /* {{{ */
 }
 /* }}} */
 
+riak_connection *get_client_connection(zval *zclient TSRMLS_DC)/* {{{ */
+{
+    if ( ! zclient) {
+        return NULL;
+    }
+
+    client_data *data = (client_data*) zend_object_store_get_object(zclient TSRMLS_CC);
+
+    if (data->connection) {
+        ensure_connected(data->connection TSRMLS_CC);
+
+        return data->connection;
+    }
+
+    if ( ! create_object_connection(zclient TSRMLS_CC)) {
+        return NULL;
+    }
+
+    return data->connection;
+}
+/* }}} */
+
 int create_object_connection(zval* zConn TSRMLS_DC)/* {{{ */
 {
     const zend_class_entry *ceClient = Z_OBJCE_P(zConn);
@@ -156,8 +177,6 @@ PHP_METHOD(RiakConnection, __construct)
     int hostLen;
     long port = DEFAULT_PORT;
     zval* zbucketarr;
-
-    const zend_class_entry *ce = Z_OBJCE_P(getThis());
 
     if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|l", &host, &hostLen, &port) == FAILURE) {
         zend_throw_exception(riak_badarguments_exception_ce, "Bad or missing argument", 500 TSRMLS_CC);
@@ -244,31 +263,5 @@ PHP_METHOD(RiakConnection, getBucket)
     zbucket = create_bucket_object(getThis(), name, name_len TSRMLS_CC);
 
     RETURN_ZVAL(zbucket, 0, 1);
-}
-/* }}} */
-
-riak_connection *get_client_connection(zval *zclient TSRMLS_DC)/* {{{ */
-{
-    client_data *data;
-
-    if ( ! zclient) {
-        return NULL;
-    }
-
-    data = (client_data*) zend_object_store_get_object(zclient TSRMLS_CC);
-
-    if (data->connection) {
-        ensure_connected(data->connection TSRMLS_CC);
-
-        return data->connection;
-    }
-
-    if ( ! create_object_connection(zclient TSRMLS_CC)) {
-        return NULL;
-    }
-
-    data = (client_data*) zend_object_store_get_object(zclient TSRMLS_CC);
-
-    return data->connection;
 }
 /* }}} */
