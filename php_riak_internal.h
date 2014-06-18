@@ -137,6 +137,12 @@
     riak_throw_exception(CONNECTION->client,  STATUS TSRMLS_CC); \
   }
 
+#define THROW_EXCEPTION_IF_CONNECTION_IS_NULL(CONN) \
+  if ( ! CONN) { \
+    zend_throw_exception(riak_connection_exception_ce, "Invalid connection reference", 0 TSRMLS_CC); \
+    return; \
+  }
+
 #define CHECK_RIACK_STATUS_THROW_AND_RETURN_ON_ERROR(CONNECTION, STATUS) \
   if ( STATUS != RIACK_SUCCESS) { \
     CONNECTION->needs_reconnect = 1; \

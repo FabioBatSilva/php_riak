@@ -45,6 +45,7 @@ typedef struct _client_data {
 zval* create_client_object(char* host, long port TSRMLS_DC);
 
 void riak_connection_init(TSRMLS_D);
+int create_object_connection(zval* zConn TSRMLS_DC);
 zend_object_value create_client_data(zend_class_entry *class_type TSRMLS_DC);
 void free_client_data(void *object TSRMLS_DC);
 
