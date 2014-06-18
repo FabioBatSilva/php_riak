@@ -1104,7 +1104,6 @@ RIACK_STRING riack_name_from_bucket(zval* bucket TSRMLS_DC)/* {{{ */
 riak_connection *get_riak_connection(zval *zbucket TSRMLS_DC)/* {{{ */
 {
     zval *zclient;
-    client_data *data;
 
     zend_call_method_with_0_params(&zbucket, NULL, NULL, "getConnection", &zclient);
 
